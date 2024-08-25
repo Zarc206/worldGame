@@ -1,8 +1,6 @@
 const socket = io()
 const canvas = document.querySelector('canvas');
-const c = canvas.getContext('2d');
-
-canvas.width = 1440;
+const c = canvas.getContext('2d');canvas.width = 1440;
 canvas.height = 900;
 
 let keys = {
@@ -133,7 +131,8 @@ function startMenu(){
         startButton.remove()
         equipmentButton.remove()
         infoButton.remove()
-        gameStart()
+        gameStart(usernameInput.value)
+        usernameInput.remove()
     }
     startButton.innerHTML = 'Start'
     startButton.style.textAlign = 'center'
@@ -175,10 +174,21 @@ function startMenu(){
     infoButton = document.getElementById('infoButton')
     infoButton.innerHTML = 'info'
     infoButton.style.textAlign = 'center'
+
+    let usernameInput = document.createElement("textarea");
+    usernameInput.style.width = 100;
+    usernameInput.style.height = 50;
+    usernameInput.style.background = "red";
+    document.body.append(usernameInput);
+    usernameInput.style.position = "absolute";
+    usernameInput.style.left = 0;
+    usernameInput.style.top = 0;
+    usernameInput.style.resize = 'none';
     infoButton.onclick = function(){
         startButton.remove()
         equipmentButton.remove()
         infoButton.remove()
+        usernameInput.remove()
         infoMenu()
     }
 
@@ -308,8 +318,7 @@ function infoMenu(){
     c.fillText(infoTrigger,0,160)
 
 }
-function gameStart(){
-
+function gameStart(startUsername){
     let playerHp = 100
     let playerEnergy = 100
     let currentTriggerSlot = 0
@@ -322,6 +331,8 @@ function gameStart(){
         c.fillStyle = 'grey';
         c.fillRect(0,0,canvas.width,canvas.height);
         socket.emit('newPlayer')
+        socket.emit("updateUsername",(startUsername));
+
 
 
         map = new Drawing({
@@ -552,6 +563,7 @@ function gameStart(){
     addTriggerIndicators()
 
     socket.on('updatePlayers',(backendPlayers,objectMap) => {
+        myPlayer.innerHTML = backendPlayers[socket.id].username
         xOffset = backendPlayers[socket.id].x
         yOffset = backendPlayers[socket.id].y
         let player = backendPlayers[socket.id]
@@ -604,8 +616,13 @@ function gameStart(){
                     },
                     id:id
                 })
+              
                 opponent.draw()
                 opponents.push(opponent)
+                c.font = "15px arial";
+                c.fillStyle = 'black';
+                c.fillText(backendPlayers[id].username,700 + xOffset -backendPlayers[id].x,415 +yOffset - backendPlayers[id].y,50)
+
             } else {
                 if(backendPlayers[id].status == 'slow'){
                     myPlayer.style.border = '5px solid black'

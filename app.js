@@ -99,7 +99,8 @@ io.on('connection',(socket) =>{
         lastTrig: 'none',
         subTrig:'none',
         energy: 100,
-        clas: "shooter"
+        clas: "shooter",
+        username:" "
       }
     }
     }
@@ -270,6 +271,10 @@ io.on('connection',(socket) =>{
   socket.on('updateSubTrigger',(key) =>{
     players[socket.id].subTrig = key
 
+  })
+  socket.on('updateUsername',(username) =>{
+    players[socket.id].username = username;
+    console.log(players[socket.id].username)
   })
   socket.on('playerStatus',(playerStatus,time) =>{
     players[socket.id].status = playerStatus

@@ -155,6 +155,7 @@ function startMenu(){
     equipmentButton.onclick = function(){
         startButton.remove()
         equipmentButton.remove()
+        usernameInput.remove()
         infoButton.remove()
 
         editEquipment()

@@ -85,8 +85,8 @@ io.on('connection',(socket) =>{
   socket.on('newPlayer', () =>{
 
     function generateSpawn(){
-      xValue = -1 *Math.abs(Math.floor(Math.random() * objectMap[0].length - 15)) * 50
-      yValue = -1 * Math.abs(Math.floor(Math.random() * objectMap.length  - 12)) * 50
+      xValue = -1 *Math.abs(Math.round(Math.random() * objectMap[0].length - 15)) * 50
+      yValue = -1 * Math.abs(Math.round(Math.random() * objectMap.length  - 12)) * 50
       console.log(String(xValue)  +' ' + String(yValue))
     if (isColide(xValue,yValue)){
       generateSpawn()
@@ -159,8 +159,8 @@ io.on('connection',(socket) =>{
     }
 
     if (trig == 'jumper'){
-      jumpX = Math.floor((players[socket.id].x - 700) / -50)
-      jumpY = Math.floor((players[socket.id].y - 400) / -50)
+      jumpX = Math.round((players[socket.id].x - 700) / -50)
+      jumpY = Math.round((players[socket.id].y - 400) / -50)
       objectMap[jumpY][jumpX] = 2
 
       function deleteObject (a,b){
@@ -183,8 +183,8 @@ io.on('connection',(socket) =>{
       } else if (lastKey == 'd'){
         xOff = 2
       } 
-      jumpX = Math.floor((players[socket.id].x - 700) / -50) + xOff
-      jumpY = Math.floor((players[socket.id].y - 400) / -50 ) + yOff
+      jumpX = Math.round((players[socket.id].x - 700) / -50) + xOff
+      jumpY = Math.round((players[socket.id].y - 400) / -50 ) + yOff
       function deleteObject (a,b){
         setTimeout(function(){
           objectMap[a][b] = 0
@@ -221,8 +221,8 @@ io.on('connection',(socket) =>{
               yOff += 2
              }
         } 
-        jumpX = Math.floor((players[socket.id].x - 700) / -50) + xOff
-      jumpY = Math.floor((players[socket.id].y - 400) / -50 ) + yOff
+        jumpX = Math.round((players[socket.id].x - 700) / -50) + xOff
+      jumpY = Math.round((players[socket.id].y - 400) / -50 ) + yOff
       function deleteObject (a,b){
         setTimeout(function(){
           objectMap[a][b] = 0
@@ -310,7 +310,6 @@ function updateServer(){
 
     serverTick += 1;
     io.emit('updatePlayers',players,objectMap)
-
     updateServer()
   },10)
 }

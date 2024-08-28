@@ -9,6 +9,7 @@ const { Server } = require('socket.io')
 const io = new  Server(server,{pingInterval: 2000, pingTimeout: 5000 })
 
 let playerSpeed = 5
+let jumpValue = 40;
 
 app.use(express.static('public'))
 
@@ -100,7 +101,8 @@ io.on('connection',(socket) =>{
         subTrig:'none',
         energy: 100,
         clas: "shooter",
-        username:" "
+        username:" ",
+        chat:" "
       }
     }
     }
@@ -132,20 +134,20 @@ io.on('connection',(socket) =>{
       }
       if (isJumpColide(player.x,player.y)){
         if (direction == 'up'){
-          if (!(isColide(player.x,player.y + playerSpeed * 20))){
-            player.y += playerSpeed * 20
+          if (!(isColide(player.x,player.y + playerSpeed * jumpValue))){
+            player.y += playerSpeed * jumpValue
           }
         } else if (direction == 'down'){
-          if (!(isColide(player.x,player.y - playerSpeed * 20))){
-            player.y -= playerSpeed * 20
+          if (!(isColide(player.x,player.y - playerSpeed * jumpValue))){
+            player.y -= playerSpeed * jumpValue
           }        
         } else if (direction == 'left'){
-          if (!(isColide(player.x + playerSpeed * 20,player.y))){
-            player.x += playerSpeed * 20
+          if (!(isColide(player.x + playerSpeed * jumpValue,player.y))){
+            player.x += playerSpeed * jumpValue
           }
         } else if (direction == 'right'){
-          if (!(isColide(player.x - playerSpeed * 20,player.y))){
-            player.x -= playerSpeed * 20 
+          if (!(isColide(player.x - playerSpeed * jumpValue,player.y))){
+            player.x -= playerSpeed * jumpValue
           }        } 
       }
 
@@ -274,8 +276,14 @@ io.on('connection',(socket) =>{
   })
   socket.on('updateUsername',(username) =>{
     players[socket.id].username = username;
-    console.log(players[socket.id].username)
   })
+  socket.on('updateChat',(chat) =>{
+    players[socket.id].chat = chat;
+  })
+  socket.on('updateClass',(clas) =>{
+    players[socket.id].clas = clas
+  });
+
   socket.on('playerStatus',(playerStatus,time) =>{
     players[socket.id].status = playerStatus
    

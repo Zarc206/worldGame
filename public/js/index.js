@@ -25,9 +25,12 @@ let shields = []
 let moveLock = false
 let inGame = false
 let standbyUsername = " "
+let playerClass = "shooter"
 
 triggerList = ['shoot','sword','shield','sniper','jumper','wall','camo','shoot-lead','radar','scorpion','asteroid']
 playerTriggers = ['shoot','scorpion','shield','sniper','jumper','wall','camo','radar']
+classes = ["shooter","magenta","lime","yellow","orange","pink","blue"]
+
 
 info = 'Controls: W = up, A = left, S = down, D = right, numbers 1-4 = Select main trigger, numbers 5-8 = Select sub trigger, O = Use main trigger, P = Use sub trigger'
 infoTrigger = "Lmao you weren't supposed to get here. Reload the page and think about what youve done"
@@ -179,6 +182,7 @@ function startMenu(){
     infoButton.style.textAlign = 'center'
 
     let usernameInput = document.createElement("textarea");
+    usernameInput.maxLength = 30;
     usernameInput.style.width = 100;
     usernameInput.style.height = 50;
     usernameInput.style.background = "red";
@@ -296,8 +300,34 @@ function editEquipment(){
         }
         
     }
+    for (let i = 0; i < classes.length; i++){
+        classChoice = new Divobject({
+            dimensions:{
+                width:75,
+                height:75
+            },
+            position:{
+                x: 100,
+                y: 100 * (i+1)
+            },
+            color: clasColor(classes[i]),
+            id:classes[i]
+        })
+        classChoice = document.getElementById(classes[i])
+        if (classes[i] == playerClass){
+            classChoice.style.border = "10px solid green"
+        } else {
+            classChoice.style.border = "10px solid black"
+        }
+        classChoice.onclick = function(){
+            for (let j = 0; j < classes.length; j++){
+                document.getElementById(classes[j]).style.border = "10px solid black"
 
-
+            }
+            document.getElementById(classes[i]).style.border = "10px solid green"
+            playerClass = classes[i];
+        }
+    }
     xButton.onclick = function(){
         for (let i = 0; i < triggerList.length; i++){
             document.getElementById('equipSlot' + i).remove()
@@ -305,7 +335,9 @@ function editEquipment(){
         for(let i = 0; i < 8; i ++){
             document.getElementById('emptyTriggerSlot' + i).remove()
             document.getElementById('xTriggerSlot' + i).remove()
-
+        }
+        for (let i = 0; i < classes.length; i++){
+            document.getElementById(classes[i]).remove()
         }
         xButton.remove()
         c.fillStyle = 'lime'
@@ -353,7 +385,7 @@ function gameStart(startUsername){
             id: 'map'
         })
         myPlayer = new Divobject({
-            color: 'red',
+            color: clasColor(playerClass),
             dimensions:{
                 width: 50,
                 height:50
@@ -403,10 +435,28 @@ function gameStart(startUsername){
         document.getElementById('triggerSlot' + 4).style.border = '5px solid red'
 
     }
+    function addChat(){
+        let chat = document.createElement("textarea")
+        chat.style.position = 'absolute';
+        chat.style.background = "yellow"
+        chat.style.border = "5px solid black"
+        chat.maxLength = 20;
+
+        chat.style.width = 150;
+        chat.style.height = 40;
+        chat.style.left = 1440-150
+        chat.style.top = 860
+        chat.id = 'chat'
+        chat.style.resize = 'none';
+        document.body.append(chat);
+    }
 
     gameSetup()
     editControls(true)
     addTriggerIndicators()
+    addChat()
+    socket.emit('updateClass',playerClass);
+
 }
 function isColide(a,b){
     if ((a.position.x < b.position.x + b.dimensions.width) &&
@@ -422,6 +472,18 @@ function isColide(a,b){
 function clasColor(clas){
     if (clas == "shooter"){
         return("red")
+    } else if (clas == "magenta"){
+        return("magenta")
+    } else if (clas == "lime"){
+        return("lime")
+    } else if (clas == "yellow"){
+        return('yellow')
+    } else if (clas == "orange"){
+        return('orange')
+    } else if (clas == "pink"){
+        return('pink')
+    } else if (clas == "blue"){
+        return("blue")
     }
 }
 function attackCooldown(number){
@@ -452,8 +514,8 @@ function subAttack(){
     if (onCooldown == false){
         trig = playerTriggers[subTriggerSlot]
         if (trig == 'jumper'){
-            if (playerEnergy > 15){
-                playerEnergy -= 15
+            if (playerEnergy > 30){
+                playerEnergy -= 30
                 socket.emit('triggerUse',trig, lastKey,playerEnergy)
             }
         } else if (trig == 'wall'){
@@ -615,13 +677,12 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
 
         } 
     }
-
-
     map.position.x = xOffset
     map.position.y = yOffset
     c.fillStyle = 'grey'
     c.fillRect(0,0,1440,900)
     map.draw()
+    socket.emit('updateChat',document.getElementById('chat').value);
     let opponents = []
     for (id in backendPlayers){
         if (!(id == socket.id)){
@@ -648,6 +709,9 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
                 c.font = "15px arial";
                 c.fillStyle = 'black';
                 c.fillText(backendPlayers[id].username,700 + xOffset -backendPlayers[id].x,415 +yOffset - backendPlayers[id].y,50)
+                c.font = "20px arial";
+                c.fillText(backendPlayers[id].chat,725 - (backendPlayers[id].chat.length * 5) + xOffset -backendPlayers[id].x,395 +yOffset - backendPlayers[id].y,200)
+
             } 
             
         } else {
@@ -664,6 +728,10 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
                 myPlayer.style.width = 50
                 myPlayer.style.height = 50 
             }
+            c.font = "20px arial";
+            c.fillStyle = 'black';
+            c.fillText(document.getElementById('chat').value,725 - document.getElementById('chat').value.length * 5,395,200)
+
         }
     }
   
@@ -836,7 +904,9 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
             playerHp -= projectileDamage
             if (element.attackType == 'shoot-lead'){
                 socket.emit('playerStatus','slow',5000)
-                playerEnergy -= 3
+                if (playerEnergy > 0){
+                    playerEnergy -= 3
+                }
             }
             for (let ii = 0; ii < projectiles.length;ii++){
                 if (projectiles[ii] == element){
@@ -961,11 +1031,11 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
         playerEnergy -= 0.05
         c.fillStyle = 'cyan'
         c.fillRect(1400 - objectMap.length * 8,20, objectMap.length * 8, objectMap[0].length * 8)
-        c.fillStyle = 'red'
+        c.fillStyle = 'blue'
         c.fillRect(1500 - objectMap.length * 8 - backendPlayers[socket.id].x / 50 * 8, 80 - backendPlayers[socket.id].y / 50 * 8,8,8)
         for (id in backendPlayers){
             if (!(id == socket.id)){
-                c.fillStyle = 'blue'
+                c.fillStyle = 'red'
                 c.fillRect(1500 - objectMap.length * 8 - backendPlayers[id].x / 50 * 8, 80 - backendPlayers[id].y / 50 * 8,8,8)
 
             }
@@ -997,6 +1067,7 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
         for (let i = 0; i < 8; i++){
             document.getElementById('triggerSlot' + i).remove();
         }
+        document.getElementById('chat').remove();
         startMenu();
         
         myPlayer.remove();

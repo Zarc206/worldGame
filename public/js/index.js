@@ -27,8 +27,8 @@ let inGame = false
 let standbyUsername = " "
 let playerClass = "shooter"
 
-triggerList = ['shoot','sword','shield','sniper','jumper','wall','camo','shoot-lead','radar','scorpion','asteroid']
-playerTriggers = ['shoot','scorpion','shield','sniper','jumper','wall','camo','radar']
+triggerList = ['shoot','sword','shield','sniper','jumper','wall','camo','shoot-lead','radar','scorpion','meteor','hound']
+playerTriggers = ['shoot','scorpion','hound','sniper','jumper','shield','camo','radar']
 classes = ["shooter","magenta","lime","yellow","orange","pink","blue"]
 
 
@@ -78,14 +78,14 @@ class Drawing {
         c.fillRect(this.position.x,this.position.y,this.dimensions.width,this.dimensions.height)
     }
     move(){
-        let bulletSpeed
+        let bulletSpeed = 0
         if (this.attackType == 'bullet'){
             bulletSpeed = 14
         }else if (this.attackType == 'snipe'){
             bulletSpeed = 40
         } else if (this.attackType == 'shoot-lead'){
             bulletSpeed = 12
-        }else if (this.attackType == 'asteroid'){
+        }else if (this.attackType == 'meteor'){
             bulletSpeed = 12
         }
         if (this.direction == 'a'){
@@ -97,6 +97,7 @@ class Drawing {
         } else if (this.direction == 's'){
             this.position.y -= bulletSpeed
         }
+
         
     }
     
@@ -736,6 +737,7 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
     }
   
     let obstacles = []
+
     shields.forEach(shield =>{
         c.fillStyle = shield.color
         let shieldPlayer = player
@@ -776,7 +778,6 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
         obstacles.push(hitbox)
 
     })
-    shields = []
     for (let row = 0; row < objectMap.length; row++){
             for (let element = 0; element < objectMap[row].length; element++){
             if (objectMap[row][element] == 1){
@@ -844,12 +845,46 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
         c.fillStyle = element.color
         element.move()
         c.fillRect(-element.position.x + 742 + xOffset, -element.position.y + 442 + yOffset,element.dimensions.width, element.dimensions.height)
-        }else if (element.attackType == 'asteroid'){
-            projectileDamage = 1.5
+        }else if (element.attackType == 'meteor'){
+            projectileDamage = 2
         c.fillStyle = element.color
         element.move()
         c.fillRect(-element.position.x + 742 + xOffset, -element.position.y + 442 + yOffset,element.dimensions.width, element.dimensions.height)
+        }if (element.attackType == 'hound'){
+            projectileDamage = 1.5
+        c.fillStyle = element.color
+
+        let trackX = 1000;
+        let trackY = 1000;
+        for (id in backendPlayers){
+            if ((Math.abs(element.position.x - backendPlayers[id].x) < (Math.abs(element.position.x - trackX)))   &&(!(id == element.id))){
+                trackX = backendPlayers[id].x
+            }
+            if ((Math.abs(element.position.y - backendPlayers[id].y) < (Math.abs(element.position.y - trackY)))   &&(!(id == element.id))){
+                trackY = backendPlayers[id].y
+            }
         }
+        if (element.position.x > trackX){
+            element.position.x -= 6
+        } else if (element.position.x < trackX) {
+            element.position.x += 6
+        } 
+        if (element.position.y > trackY){
+            element.position.y -= 6
+        } else if (element.position.x < trackY) {
+            element.position.y += 6
+        } 
+        if (trackX == 1000){
+            for (let ii = 0; ii < projectiles.length;ii++){
+                if (projectiles[ii] == element){
+                    projectiles.splice(ii,1)
+                }
+            }
+        }
+        
+
+        c.fillRect(-element.position.x + 742 + xOffset, -element.position.y + 442 + yOffset,element.dimensions.width, element.dimensions.height)
+        } 
         hitbox = new Hitbox({
             dimensions:element.dimensions,
             position:{
@@ -862,7 +897,7 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
             if ((isColide(hitbox,opponents[i])) &&( !(opponents[i].id == hitbox.player))){
                for (let ii = 0; ii < projectiles.length;ii++){
                 if (projectiles[ii] == element){
-                    if (element.attackType == 'asteroid'){
+                    if (element.attackType == 'meteor'){
                         c.fillRect(-element.position.x + 742 + xOffset - element.dimensions.width * 20/2, -element.position.y + 442 + yOffset-element.dimensions.width * 20/2,element.dimensions.width * 20, element.dimensions.height * 20)
                         hitbox.position.x = -element.position.x + 742 + xOffset - element.dimensions.width * 20/2
                         hitbox.position.y =  -element.position.y + 442 + yOffset-element.dimensions.width * 20/2
@@ -875,10 +910,10 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
             }
         }
         for (let i = 0; i < obstacles.length; i++){
-            if (isColide(hitbox,obstacles[i])){
+            if ((isColide(hitbox,obstacles[i])) && (!(element.id == obstacles[i].player))){
                 for (let ii = 0; ii < projectiles.length;ii++){
                     if (projectiles[ii] == element){
-                        if (element.attackType == 'asteroid'){
+                        if (element.attackType == 'meteor'){
                         c.fillRect(-element.position.x + 742 + xOffset - element.dimensions.width * 20/2, -element.position.y + 442 + yOffset-element.dimensions.width * 20/2,element.dimensions.width * 20, element.dimensions.height * 20)
                         hitbox.position.x = -element.position.x + 742 + xOffset - element.dimensions.width * 20/2
                         hitbox.position.y =  -element.position.y + 442 + yOffset-element.dimensions.width * 20/2
@@ -1031,11 +1066,11 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
         playerEnergy -= 0.05
         c.fillStyle = 'cyan'
         c.fillRect(1400 - objectMap.length * 8,20, objectMap.length * 8, objectMap[0].length * 8)
-        c.fillStyle = 'blue'
+        c.fillStyle = clasColor(playerClass)
         c.fillRect(1500 - objectMap.length * 8 - backendPlayers[socket.id].x / 50 * 8, 80 - backendPlayers[socket.id].y / 50 * 8,8,8)
         for (id in backendPlayers){
             if (!(id == socket.id)){
-                c.fillStyle = 'red'
+                c.fillStyle = clasColor(backendPlayers[id].clas)
                 c.fillRect(1500 - objectMap.length * 8 - backendPlayers[id].x / 50 * 8, 80 - backendPlayers[id].y / 50 * 8,8,8)
 
             }
@@ -1057,6 +1092,7 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
     if (playerEnergy < 100){
         playerEnergy+= .2
     }
+    shields = []
 
     if(playerHp <= 0){
         inGame = false
@@ -1072,8 +1108,6 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
         
         myPlayer.remove();
     }
-
-
 }
 })
 socket.on('createAttack',(player, trig, lastKey,id) =>{
@@ -1095,13 +1129,10 @@ socket.on('createAttack',(player, trig, lastKey,id) =>{
                 },
                 id: id,
                 attackType: 'bullet'
-
-
             })
             projectiles.push(bullet)
                 bullet.direction = lastKey
         }
-    
 } else if (trig == 'sword'){
             if (id == socket.id){
             playerEnergy -= 10
@@ -1184,7 +1215,7 @@ socket.on('createAttack',(player, trig, lastKey,id) =>{
     
 }else if (trig == 'shield'){
             if (id == socket.id){
-            playerEnergy -= 0.2
+            playerEnergy -= 0.1
             }
         xMelee = -50
         widthMelee = 10
@@ -1271,8 +1302,7 @@ socket.on('createAttack',(player, trig, lastKey,id) =>{
                 bullet.direction = lastKey
         }
     
-} else if (trig == 'asteroid'){
-
+} else if (trig == 'meteor'){
     if (id == socket.id){
         playerEnergy -= 30
         }
@@ -1289,13 +1319,33 @@ socket.on('createAttack',(player, trig, lastKey,id) =>{
                     height:10
                 },
                 id: id,
-                attackType: 'asteroid'
-
-
+                attackType: 'meteor'
             })
             projectiles.push(bullet)
                 bullet.direction = lastKey
         }
+} else if (trig == 'hound'){
+    if (id == socket.id){
+    playerEnergy -= 30
+    }
+    attackCooldown(1000)
+    for (let i = 0; i < 16; i ++){
+        bullet = new Drawing({
+            position:{
+                x:player.x + 15 * Math.floor(i/4) ,
+                y:player.y  + 15 * (i%4)
+            },
+            color:'lime',
+            dimensions:{
+                width:10,
+                height:10
+            },
+            id: id,
+            attackType: 'hound'
+        })
+        projectiles.push(bullet)
+            bullet.direction = lastKey
+    }
 }
 
 })

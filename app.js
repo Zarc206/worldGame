@@ -261,7 +261,11 @@ io.on('connection',(socket) =>{
       if (players[socket.id].energy > 15){
       io.emit('createAttack',players[socket.id], trig, lastKey,socket.id)
       }
-    }else if (trig == 'asteroid'){
+    }else if (trig == 'meteor'){
+      if (players[socket.id].energy > 30){
+      io.emit('createAttack',players[socket.id], trig, lastKey,socket.id)
+      }
+    }else if (trig == 'hound'){
       if (players[socket.id].energy > 30){
       io.emit('createAttack',players[socket.id], trig, lastKey,socket.id)
       }

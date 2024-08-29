@@ -497,8 +497,8 @@ function attack(){
     if (onCooldown == false){
         trig = playerTriggers[currentTriggerSlot]
         if (trig == 'jumper'){
-            if (playerEnergy > 30){
-                playerEnergy -= 30
+            if (playerEnergy > 15){
+                playerEnergy -= 15
                 socket.emit('triggerUse',trig, lastKey,playerEnergy)
             }
         } else if (trig == 'wall'){
@@ -515,8 +515,8 @@ function subAttack(){
     if (onCooldown == false){
         trig = playerTriggers[subTriggerSlot]
         if (trig == 'jumper'){
-            if (playerEnergy > 30){
-                playerEnergy -= 30
+            if (playerEnergy > 15){
+                playerEnergy -= 15
                 socket.emit('triggerUse',trig, lastKey,playerEnergy)
             }
         } else if (trig == 'wall'){
@@ -868,12 +868,16 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
             element.position.x -= 6
         } else if (element.position.x < trackX) {
             element.position.x += 6
-        } 
+        } else {
+            element.position.x += 6
+        }
         if (element.position.y > trackY){
             element.position.y -= 6
         } else if (element.position.x < trackY) {
             element.position.y += 6
-        } 
+        } else {
+            element.position.y += 6
+        }
         if (trackX == 1000){
             for (let ii = 0; ii < projectiles.length;ii++){
                 if (projectiles[ii] == element){
@@ -1020,9 +1024,9 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
         
             if ((isColide(playerHitbox, hitbox)) && (!(hitbox.player == socket.id))){
                 if (weapon.attackType == 'sword'){
-                playerHp -= 5
+                playerHp -= 6
                 } else if (weapon.attackType == 'scorpion'){
-                    playerHp -= 3
+                    playerHp -= 5
                 }
             }
                 

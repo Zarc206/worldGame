@@ -28,7 +28,7 @@ let standbyUsername = " "
 let playerClass = "shooter"
 
 triggerList = ['shoot','sword','shield','sniper','jumper','wall','camo','shoot-lead','radar','scorpion','asteroid','hound','cloak','teleport']
-playerTriggers = ['soot','scorpion','hound','sniper','jumper','shield','camo','radar']
+playerTriggers = ['shoot','scorpion','hound','sniper','jumper','shield','camo','radar']
 classes = ["shooter","magenta","lime","yellow","orange","pink","blue"]
 
 

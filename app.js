@@ -178,19 +178,19 @@ io.on('connection',(socket) =>{
       jumpValue = 30
         if (lastKey == 'w'){
           if (!(isColide(player.x,player.y + playerSpeed * jumpValue))){
-            player.y += playerSpeed * jumpValue
+            players[socket.id].y += playerSpeed * jumpValue
           }
         } else if (lastKey == 's'){
           if (!(isColide(player.x,player.y - playerSpeed * jumpValue))){
-            player.y -= playerSpeed * jumpValue
+            players[socket.id].y -= playerSpeed * jumpValue
           }        
         } else if (lastKey == 'a'){
           if (!(isColide(player.x + playerSpeed * jumpValue,player.y))){
-            player.x += playerSpeed * jumpValue
+            players[socket.id].x += playerSpeed * jumpValue
           }
         } else if (lastKey == 'd'){
           if (!(isColide(player.x - playerSpeed * jumpValue,player.y))){
-            player.x -= playerSpeed * jumpValue
+            players[socket.id].x -= playerSpeed * jumpValue
           }        } 
   
     }else if (trig == 'wall'){

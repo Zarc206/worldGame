@@ -102,7 +102,8 @@ io.on('connection',(socket) =>{
         energy: 100,
         clas: "shooter",
         username:" ",
-        chat:" "
+        chat:" ",
+        hp: 100
       }
     }
     }
@@ -156,6 +157,8 @@ io.on('connection',(socket) =>{
     players[socket.id].energy = energy
     if (trig == 'camo'){
       players[socket.id].status = 'invisible' 
+    } else if (trig == 'cloak'){
+      players[socket.id].status = 'cloaked' 
     } else {
       players[socket.id].status = 'none' 
     }
@@ -171,7 +174,26 @@ io.on('connection',(socket) =>{
         },5000)
       }
       deleteObject(jumpY,jumpX)
-    } else if (trig == 'wall'){
+    } else if (trig == "teleport"){
+      jumpValue = 30
+        if (lastKey == 'w'){
+          if (!(isColide(player.x,player.y + playerSpeed * jumpValue))){
+            player.y += playerSpeed * jumpValue
+          }
+        } else if (lastKey == 's'){
+          if (!(isColide(player.x,player.y - playerSpeed * jumpValue))){
+            player.y -= playerSpeed * jumpValue
+          }        
+        } else if (lastKey == 'a'){
+          if (!(isColide(player.x + playerSpeed * jumpValue,player.y))){
+            player.x += playerSpeed * jumpValue
+          }
+        } else if (lastKey == 'd'){
+          if (!(isColide(player.x - playerSpeed * jumpValue,player.y))){
+            player.x -= playerSpeed * jumpValue
+          }        } 
+  
+    }else if (trig == 'wall'){
       xOff = 0
       yOff = 0
       jumpX = 0;
@@ -261,7 +283,7 @@ io.on('connection',(socket) =>{
       if (players[socket.id].energy > 15){
       io.emit('createAttack',players[socket.id], trig, lastKey,socket.id)
       }
-    }else if (trig == 'meteor'){
+    }else if (trig == 'asteroid'){
       if (players[socket.id].energy > 30){
       io.emit('createAttack',players[socket.id], trig, lastKey,socket.id)
       }
@@ -281,8 +303,9 @@ io.on('connection',(socket) =>{
   socket.on('updateUsername',(username) =>{
     players[socket.id].username = username;
   })
-  socket.on('updateChat',(chat) =>{
+  socket.on('updateChat',(chat,hp) =>{
     players[socket.id].chat = chat;
+    players[socket.id].hp = hp;
   })
   socket.on('updateClass',(clas) =>{
     players[socket.id].clas = clas
@@ -315,7 +338,9 @@ function updateServer(){
       currentPlayer = players[id]
       if (((currentPlayer.lastTrig == 'camo')||(currentPlayer.subTrig == 'camo'))&&(!(currentPlayer.energy < 1))){
         currentPlayer.status = 'invisible'
-      } else if (currentPlayer.status == 'invisible'){
+      } else if (((currentPlayer.lastTrig == 'cloak')||(currentPlayer.subTrig == 'cloak'))&&(!(currentPlayer.energy < 1))){
+        currentPlayer.status = 'cloaked'
+      }else if ((currentPlayer.status == 'invisible') || (currentPlayer.status == 'cloaked')){
         currentPlayer.status = 'none'
       }
     }

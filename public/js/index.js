@@ -27,8 +27,8 @@ let inGame = false
 let standbyUsername = " "
 let playerClass = "shooter"
 
-triggerList = ['shoot','sword','shield','sniper','jumper','wall','camo','shoot-lead','radar','scorpion','meteor','hound']
-playerTriggers = ['shoot','scorpion','hound','sniper','jumper','shield','camo','radar']
+triggerList = ['shoot','sword','shield','sniper','jumper','wall','camo','shoot-lead','radar','scorpion','asteroid','hound','cloak','teleport']
+playerTriggers = ['soot','scorpion','hound','sniper','jumper','shield','camo','radar']
 classes = ["shooter","magenta","lime","yellow","orange","pink","blue"]
 
 
@@ -74,8 +74,10 @@ class Drawing {
         this.lifespan = lifespan
     }   
     draw(){
+        if (!(this.color == "none")){
         c.fillStyle = this.color
         c.fillRect(this.position.x,this.position.y,this.dimensions.width,this.dimensions.height)
+        }
     }
     move(){
         let bulletSpeed = 0
@@ -85,7 +87,7 @@ class Drawing {
             bulletSpeed = 40
         } else if (this.attackType == 'shoot-lead'){
             bulletSpeed = 12
-        }else if (this.attackType == 'meteor'){
+        }else if (this.attackType == 'asteroid'){
             bulletSpeed = 12
         }
         if (this.direction == 'a'){
@@ -221,6 +223,14 @@ function editEquipment(){
     xButton = document.getElementById('xButton')
     let standbyTrigger = ''
     for (let i = 0; i < triggerList.length; i++){
+        let slotY = 20;
+        let slotX = 0;
+        if (i > 11){
+            slotY = 80;
+            slotX = 1320
+        } else {
+            slotY = 20
+        }
         equipSlot = new Divobject({
             dimensions:{
                 width: 100,
@@ -228,8 +238,8 @@ function editEquipment(){
             },
             color: 'cyan',
             position:{
-                x: 110 * (i +1),
-                y:20
+                x: 110 * (i +1) - slotX,
+                y: slotY
             },
             id: 'equipSlot' + i
         })
@@ -309,7 +319,7 @@ function editEquipment(){
             },
             position:{
                 x: 100,
-                y: 100 * (i+1)
+                y: 40 + 100 * (i+1)
             },
             color: clasColor(classes[i]),
             id:classes[i]
@@ -497,8 +507,9 @@ function attack(){
     if (onCooldown == false){
         trig = playerTriggers[currentTriggerSlot]
         if (trig == 'jumper'){
-            if (playerEnergy > 15){
-                playerEnergy -= 15
+            if (playerEnergy > 20){
+                playerEnergy -= 20
+                attackCooldown(200);
                 socket.emit('triggerUse',trig, lastKey,playerEnergy)
             }
         } else if (trig == 'wall'){
@@ -506,7 +517,13 @@ function attack(){
                 playerEnergy -= 30
                 socket.emit('triggerUse',trig, lastKey,playerEnergy)
             }
-        } else {
+        }else if (trig == 'teleport'){
+            if (playerEnergy > 20){
+                attackCooldown(500);
+                playerEnergy -= 20
+                socket.emit('triggerUse',trig, lastKey,playerEnergy)
+            }
+        }  else {
         socket.emit('triggerUse',trig, lastKey,playerEnergy)
         }
     }
@@ -515,8 +532,10 @@ function subAttack(){
     if (onCooldown == false){
         trig = playerTriggers[subTriggerSlot]
         if (trig == 'jumper'){
-            if (playerEnergy > 15){
-                playerEnergy -= 15
+            if (playerEnergy > 20){
+                playerEnergy -= 20
+                attackCooldown(200);
+
                 socket.emit('triggerUse',trig, lastKey,playerEnergy)
             }
         } else if (trig == 'wall'){
@@ -524,7 +543,13 @@ function subAttack(){
                 playerEnergy -= 30
                 socket.emit('triggerUse',trig, lastKey,playerEnergy)
             }
-        } else {
+        } else if (trig == 'teleport'){
+            if (playerEnergy > 20){
+                attackCooldown(500);
+                playerEnergy -= 20
+                socket.emit('triggerUse',trig, lastKey,playerEnergy)
+            }
+        }else {
         socket.emit('triggerUse',trig, lastKey,playerEnergy)
         }
     }
@@ -683,14 +708,24 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
     c.fillStyle = 'grey'
     c.fillRect(0,0,1440,900)
     map.draw()
-    socket.emit('updateChat',document.getElementById('chat').value);
+    socket.emit('updateChat',(document.getElementById('chat').value),playerHp);
     let opponents = []
     for (id in backendPlayers){
-        if (!(id == socket.id)){
+        color = clasColor(backendPlayers[id].clas);
+        if (!(id == socket.id)){if (!(backendPlayers[id].status == 'invisible')){
+            c.font = "15px arial";
+            c.fillStyle = 'black';
+            c.fillText(backendPlayers[id].username,700 + xOffset -backendPlayers[id].x,415 +yOffset - backendPlayers[id].y,50)
+            c.font = "20px arial";
+            c.fillText(backendPlayers[id].chat,725 - (backendPlayers[id].chat.length * 5) + xOffset -backendPlayers[id].x,395 +yOffset - backendPlayers[id].y,200)
+            c.fillStyle = "red";
+            c.fillRect(680 + xOffset - backendPlayers[id].x,400 + yOffset - backendPlayers[id].y,10,backendPlayers[id].hp/2)
             color = clasColor(backendPlayers[id].clas);
-            if (backendPlayers[id].status == 'invisible'){
-                color = 'none'
-            } 
+
+        } if (backendPlayers[id].status == 'invisible'){
+            color = 'none'
+        } 
+            
             opponent = new Drawing({
                 dimensions:{
                     width:50,
@@ -706,14 +741,7 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
           
             opponent.draw()
             opponents.push(opponent)
-            if (!(backendPlayers[id].status == 'invisible')){
-                c.font = "15px arial";
-                c.fillStyle = 'black';
-                c.fillText(backendPlayers[id].username,700 + xOffset -backendPlayers[id].x,415 +yOffset - backendPlayers[id].y,50)
-                c.font = "20px arial";
-                c.fillText(backendPlayers[id].chat,725 - (backendPlayers[id].chat.length * 5) + xOffset -backendPlayers[id].x,395 +yOffset - backendPlayers[id].y,200)
-
-            } 
+            
             
         } else {
             if(backendPlayers[id].status == 'slow'){
@@ -724,7 +752,11 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
                 myPlayer.style.border = '5px solid cyan'
                 myPlayer.style.width = 40
                 myPlayer.style.height = 40
-            } else {
+            } else if(backendPlayers[id].status == 'cloaked'){
+                myPlayer.style.border = '5px solid purple'
+                myPlayer.style.width = 40
+                myPlayer.style.height = 40
+            }else {
                 myPlayer.style.border = 'none'
                 myPlayer.style.width = 50
                 myPlayer.style.height = 50 
@@ -845,7 +877,7 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
         c.fillStyle = element.color
         element.move()
         c.fillRect(-element.position.x + 742 + xOffset, -element.position.y + 442 + yOffset,element.dimensions.width, element.dimensions.height)
-        }else if (element.attackType == 'meteor'){
+        }else if (element.attackType == 'asteroid'){
             projectileDamage = 2
         c.fillStyle = element.color
         element.move()
@@ -901,7 +933,7 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
             if ((isColide(hitbox,opponents[i])) &&( !(opponents[i].id == hitbox.player))){
                for (let ii = 0; ii < projectiles.length;ii++){
                 if (projectiles[ii] == element){
-                    if (element.attackType == 'meteor'){
+                    if (element.attackType == 'asteroid'){
                         c.fillRect(-element.position.x + 742 + xOffset - element.dimensions.width * 20/2, -element.position.y + 442 + yOffset-element.dimensions.width * 20/2,element.dimensions.width * 20, element.dimensions.height * 20)
                         hitbox.position.x = -element.position.x + 742 + xOffset - element.dimensions.width * 20/2
                         hitbox.position.y =  -element.position.y + 442 + yOffset-element.dimensions.width * 20/2
@@ -917,7 +949,7 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
             if ((isColide(hitbox,obstacles[i])) && (!(element.id == obstacles[i].player))){
                 for (let ii = 0; ii < projectiles.length;ii++){
                     if (projectiles[ii] == element){
-                        if (element.attackType == 'meteor'){
+                        if (element.attackType == 'asteroid'){
                         c.fillRect(-element.position.x + 742 + xOffset - element.dimensions.width * 20/2, -element.position.y + 442 + yOffset-element.dimensions.width * 20/2,element.dimensions.width * 20, element.dimensions.height * 20)
                         hitbox.position.x = -element.position.x + 742 + xOffset - element.dimensions.width * 20/2
                         hitbox.position.y =  -element.position.y + 442 + yOffset-element.dimensions.width * 20/2
@@ -1066,6 +1098,19 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
             socket.emit('triggerUse',trig, lastKey,playerEnergy)
             }
     }
+    if ((playerTriggers[currentTriggerSlot] == 'cloak')){
+        if (playerEnergy > 1){
+        playerEnergy -= 0.05
+        trig = playerTriggers[currentTriggerSlot]
+        socket.emit('triggerUse',trig, lastKey,playerEnergy)
+        }
+    } else if (playerTriggers[subTriggerSlot] == 'cloak'){
+        if (playerEnergy > 1){
+            playerEnergy -= 0.05
+            trig = playerTriggers[subTriggerSlot]
+            socket.emit('triggerUse',trig, lastKey,playerEnergy)
+            }
+    }
     if ((playerTriggers[currentTriggerSlot] == 'radar') || (playerTriggers[subTriggerSlot] == 'radar')){
         playerEnergy -= 0.05
         c.fillStyle = 'cyan'
@@ -1073,7 +1118,7 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
         c.fillStyle = clasColor(playerClass)
         c.fillRect(1500 - objectMap.length * 8 - backendPlayers[socket.id].x / 50 * 8, 80 - backendPlayers[socket.id].y / 50 * 8,8,8)
         for (id in backendPlayers){
-            if (!(id == socket.id)){
+            if ((!(id == socket.id)) && (!(backendPlayers[id].status == "cloaked"))){
                 c.fillStyle = clasColor(backendPlayers[id].clas)
                 c.fillRect(1500 - objectMap.length * 8 - backendPlayers[id].x / 50 * 8, 80 - backendPlayers[id].y / 50 * 8,8,8)
 
@@ -1306,7 +1351,7 @@ socket.on('createAttack',(player, trig, lastKey,id) =>{
                 bullet.direction = lastKey
         }
     
-} else if (trig == 'meteor'){
+} else if (trig == 'asteroid'){
     if (id == socket.id){
         playerEnergy -= 30
         }
@@ -1323,7 +1368,7 @@ socket.on('createAttack',(player, trig, lastKey,id) =>{
                     height:10
                 },
                 id: id,
-                attackType: 'meteor'
+                attackType: 'asteroid'
             })
             projectiles.push(bullet)
                 bullet.direction = lastKey

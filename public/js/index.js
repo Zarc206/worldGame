@@ -3,6 +3,8 @@ const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');canvas.width = 1440;
 canvas.height = 900;
 
+
+
 let keys = {
     w:{
         pressed:false
@@ -26,6 +28,7 @@ let moveLock = false
 let inGame = false
 let standbyUsername = " "
 let playerClass = "shooter"
+let currentUsername = "guest"
 
 triggerList = ['shoot','sword','shield','sniper','jumper','wall','camo','shoot-lead','radar','scorpion','asteroid','hound','cloak','teleport']
 playerTriggers = ['shoot','scorpion','hound','sniper','jumper','shield','camo','radar']
@@ -120,6 +123,8 @@ function startMenu(){
     c.fillStyle = 'black'
     c.font = '50px arial'
     c.fillText("Game Battle",600,200)
+    c.font = '20px arial'
+    c.fillText(currentUsername,150,20)
 
     let startButton = new Divobject({
         color: 'yellow',
@@ -139,6 +144,8 @@ function startMenu(){
         equipmentButton.remove()
         infoButton.remove()
         standbyUsername = usernameInput.value;
+        createAccountButton.remove()
+        loginButton.remove()
         gameStart(usernameInput.value)
         usernameInput.remove()
     }
@@ -165,6 +172,8 @@ function startMenu(){
         equipmentButton.remove()
         usernameInput.remove()
         infoButton.remove()
+        createAccountButton.remove()
+        loginButton.remove()
         standbyUsername = usernameInput.value;
         editEquipment()
     }
@@ -183,6 +192,59 @@ function startMenu(){
     infoButton = document.getElementById('infoButton')
     infoButton.innerHTML = 'info'
     infoButton.style.textAlign = 'center'
+    let createAccountButton = new Divobject({
+        color: 'yellow',
+        dimensions:{
+            width: 200,
+            height:100
+        },
+        position:{
+            x:1230,
+            y:0
+        },
+        id: 'createAccountButton'
+    })
+    createAccountButton = document.getElementById("createAccountButton");
+    createAccountButton.innerHTML = "Create Account"
+    createAccountButton.style.textAlign = 'center'
+    createAccountButton.style.border = "5px Solid Black"
+    createAccountButton.onclick = function(){
+        startButton.remove()
+        equipmentButton.remove()
+        usernameInput.remove()
+        infoButton.remove()
+        createAccountButton.remove()
+        loginButton.remove()
+        createAccount();
+    }
+
+
+    let loginButton = new Divobject({
+        color: 'yellow',
+        dimensions:{
+            width: 200,
+            height:100
+        },
+        position:{
+            x:1230,
+            y:150
+        },
+        id: 'loginButton'
+    })
+    loginButton = document.getElementById("loginButton");
+    loginButton.innerHTML = "Log in"
+    loginButton.style.textAlign = 'center'
+    loginButton.style.border = "5px Solid Black"
+    loginButton.onclick = function(){
+        startButton.remove()
+        equipmentButton.remove()
+        usernameInput.remove()
+        infoButton.remove()
+        loginButton.remove()
+        createAccountButton.remove()
+        login();
+    }
+
 
     let usernameInput = document.createElement("textarea");
     usernameInput.maxLength = 30;
@@ -199,7 +261,9 @@ function startMenu(){
         startButton.remove()
         equipmentButton.remove()
         infoButton.remove()
+        loginButton.remove()
         usernameInput.remove()
+        createAccountButton.remove()
         infoMenu()
     }
 
@@ -355,6 +419,152 @@ function editEquipment(){
         c.fillRect(0,0,1440,900)
         startMenu()
     }
+}
+function createAccount(){
+    c.fillStyle = "gray";
+    c.fillRect(0,0,1440,900);
+
+    xButtonAccount = new Divobject({
+        dimensions:{
+            width:50,
+            height:50
+        },
+        color:"red",
+        position:{
+            x:0,
+            y:0
+        },
+        id:"xButtonAccount"
+    })
+    xButtonAccount = document.getElementById("xButtonAccount");
+    xButtonAccount.onclick = function(){
+        xButtonAccount.remove()
+        usernameArea.remove()
+        passwordArea.remove()
+        newUserButton.remove()
+        c.fillStyle = "lime"
+        c.fillRect(0,0,1440,900);
+        startMenu();
+    }
+    c.fillStyle = "black"
+    c.font = "50px Arial"
+    c.fillText("Username:", 620, 250)
+    usernameArea = document.createElement("textarea")
+    usernameArea.style.width = 200
+    usernameArea.style.height = 40
+    usernameArea.style.position = "absolute"
+    usernameArea.style.left = 620
+    usernameArea.style.top = 270
+    usernameArea.style.border = "5px solid black"
+    usernameArea.style.background = "cyan"
+    usernameArea.style.resize = 'none';
+    document.body.append(usernameArea)
+
+    c.fillText("Password:", 620, 430)
+    passwordArea = document.createElement("textarea")
+    passwordArea.style.width = 200
+    passwordArea.style.height = 40
+    passwordArea.style.position = "absolute"
+    passwordArea.style.left = 620
+    passwordArea.style.top = 450
+    passwordArea.style.border = "5px solid black"
+    passwordArea.style.background = "cyan"
+    passwordArea.style.resize = 'none';
+    document.body.append(passwordArea)
+
+    newUserButton = new Divobject({
+        dimensions:{
+            width:200,
+            height:100
+        },
+        color:"yellow",
+        position:{
+            x:620,
+            y:550
+        },
+        id:"newUserButton"
+    })
+    newUserButton = document.getElementById("newUserButton")
+    newUserButton.innerHTML = "Create Account";
+    newUserButton.style.textAlign = "center"
+    newUserButton.onclick = function(){
+        socket.emit('newUser',usernameArea.value,passwordArea.value)
+    }
+
+
+}
+function login(){
+    c.fillStyle = "gray";
+    c.fillRect(0,0,1440,900);
+
+    xButtonAccount = new Divobject({
+        dimensions:{
+            width:50,
+            height:50
+        },
+        color:"red",
+        position:{
+            x:0,
+            y:0
+        },
+        id:"xButtonAccount"
+    })
+    xButtonAccount = document.getElementById("xButtonAccount");
+    xButtonAccount.onclick = function(){
+        xButtonAccount.remove()
+        usernameArea.remove()
+        passwordArea.remove()
+        newUserButton.remove()
+        c.fillStyle = "lime"
+        c.fillRect(0,0,1440,900);
+        startMenu();
+    }
+    c.fillStyle = "black"
+    c.font = "50px Arial"
+    c.fillText("Username:", 620, 250)
+    usernameArea = document.createElement("textarea")
+    usernameArea.style.width = 200
+    usernameArea.style.height = 40
+    usernameArea.style.position = "absolute"
+    usernameArea.style.left = 620
+    usernameArea.style.top = 270
+    usernameArea.style.border = "5px solid black"
+    usernameArea.style.background = "cyan"
+    usernameArea.style.resize = 'none';
+    document.body.append(usernameArea)
+
+    c.fillText("Password:", 620, 430)
+    passwordArea = document.createElement("textarea")
+    passwordArea.style.width = 200
+    passwordArea.style.height = 40
+    passwordArea.style.position = "absolute"
+    passwordArea.style.left = 620
+    passwordArea.style.top = 450
+    passwordArea.style.border = "5px solid black"
+    passwordArea.style.background = "cyan"
+    passwordArea.style.resize = 'none';
+    document.body.append(passwordArea)
+
+    newUserButton = new Divobject({
+        dimensions:{
+            width:200,
+            height:100
+        },
+        color:"yellow",
+        position:{
+            x:620,
+            y:550
+        },
+        id:"newUserButton"
+    })
+    newUserButton = document.getElementById("newUserButton")
+    newUserButton.innerHTML = "Log in";
+    newUserButton.style.textAlign = "center"
+    newUserButton.onclick = function(){
+        socket.emit('login',usernameArea.value,passwordArea.value)
+    }
+
+
 }
 function infoMenu(){
     c.fillStyle = 'cyan'
@@ -883,7 +1093,7 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
         element.move()
         c.fillRect(-element.position.x + 742 + xOffset, -element.position.y + 442 + yOffset,element.dimensions.width, element.dimensions.height)
         }if (element.attackType == 'hound'){
-            projectileDamage = 1.5
+            projectileDamage = 1
         c.fillStyle = element.color
 
         let trackX = 1000;
@@ -896,19 +1106,20 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
                 trackY = backendPlayers[id].y
             }
         }
+        bulletSpeed = 4
         if (element.position.x > trackX){
-            element.position.x -= 6
+            element.position.x -= bulletSpeed
         } else if (element.position.x < trackX) {
-            element.position.x += 6
+            element.position.x += bulletSpeed
         } else {
-            element.position.x += 6
+            element.position.x += bulletSpeed
         }
         if (element.position.y > trackY){
-            element.position.y -= 6
+            element.position.y -= bulletSpeed
         } else if (element.position.x < trackY) {
-            element.position.y += 6
+            element.position.y += bulletSpeed
         } else {
-            element.position.y += 6
+            element.position.y += bulletSpeed
         }
         if (trackX == 1000){
             for (let ii = 0; ii < projectiles.length;ii++){
@@ -1375,7 +1586,7 @@ socket.on('createAttack',(player, trig, lastKey,id) =>{
         }
 } else if (trig == 'hound'){
     if (id == socket.id){
-    playerEnergy -= 30
+    playerEnergy -= 40
     }
     attackCooldown(1000)
     for (let i = 0; i < 16; i ++){
@@ -1397,5 +1608,18 @@ socket.on('createAttack',(player, trig, lastKey,id) =>{
     }
 }
 
+})
+socket.on("sendMessage",(message) =>{
+    alert(message)
+})
+socket.on('loggedIn',() =>{
+    currentUsername  = usernameArea.value
+    xButtonAccount.remove()
+    usernameArea.remove()
+    passwordArea.remove()
+    newUserButton.remove()
+    c.fillStyle = "lime"
+    c.fillRect(0,0,1440,900);
+    startMenu();
 })
 startMenu()

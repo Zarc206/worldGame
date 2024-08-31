@@ -1,6 +1,8 @@
 const express = require('express')
 const app = express()
 const port = 3000
+const fs = require('fs')
+
 
 //socket.io setup
 const http = require('http')
@@ -310,13 +312,30 @@ io.on('connection',(socket) =>{
   socket.on('updateClass',(clas) =>{
     players[socket.id].clas = clas
   });
-
   socket.on('playerStatus',(playerStatus,time) =>{
     players[socket.id].status = playerStatus
    
     setTimeout(function(){
       players[socket.id].status = 'none'
     },time)
+  })
+  socket.on('newUser',(username,password) =>{
+    newUser(username,password);
+  })
+  socket.on('login',(username,password) =>{
+    fs.readFile('userData.txt', (err, inputD) => {
+      if (err) throw err;
+      let accountArray = ((inputD.toString()).split("\n"))
+      if (!((inputD.toString()).includes(username))){
+        io.emit('sendMessage',("Username does not exist"))
+      }else {
+        for (let i = 0; i < accountArray.length; i+=2){
+          if((accountArray[i] == ("Username: " + username))&&(accountArray[i+1] == "Password: " + password)){
+            io.emit('loggedIn')
+          }
+        }
+      }
+      })
   })
 
 
@@ -330,7 +349,22 @@ io.on('connection',(socket) =>{
   })
 })
 
-
+function newUser(username,password){
+  fs.readFile('userData.txt', (err, inputD) => {
+    if (err) throw err;
+    if ((inputD.toString()).includes(username)){
+      io.emit('sendMessage',("Username in use"))
+    }else if ((inputD.toString()).includes(password)){
+      io.emit('sendMessage',("Password in use"))
+    } else {
+      let writtenStuff = "Username: " + username + "\nPassword: " + password + "\n";
+      io.emit('loggedIn')
+      fs.appendFile('userData.txt', writtenStuff, (err) => {
+          if (err) throw err; 
+      })
+    }
+  }) 
+}
 
 function updateServer(){
     setTimeout(function(){

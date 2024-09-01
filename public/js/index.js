@@ -3,8 +3,6 @@ const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');canvas.width = 1440;
 canvas.height = 900;
 
-
-
 let keys = {
     w:{
         pressed:false
@@ -29,15 +27,15 @@ let inGame = false
 let standbyUsername = " "
 let playerClass = "shooter"
 let currentUsername = "guest"
+let inLoggin = false
 
-triggerList = ['shoot','sword','shield','sniper','jumper','wall','camo','shoot-lead','radar','scorpion','asteroid','hound','cloak','teleport']
+
+triggerList = ['shoot','sword','shield','sniper','jumper','wall','camo','shoot-lead','radar','scorpion','asteroid','hound','cloak','teleport','lightning']
 playerTriggers = ['shoot','scorpion','hound','sniper','jumper','shield','camo','radar']
 classes = ["shooter","magenta","lime","yellow","orange","pink","blue"]
 
-
 info = 'Controls: W = up, A = left, S = down, D = right, numbers 1-4 = Select main trigger, numbers 5-8 = Select sub trigger, O = Use main trigger, P = Use sub trigger'
 infoTrigger = "Lmao you weren't supposed to get here. Reload the page and think about what youve done"
-
 
 class Divobject {
     constructor({
@@ -88,7 +86,9 @@ class Drawing {
             bulletSpeed = 14
         }else if (this.attackType == 'snipe'){
             bulletSpeed = 40
-        } else if (this.attackType == 'shoot-lead'){
+        } else if (this.attackType == 'lightning'){
+            bulletSpeed = 40
+        }else if (this.attackType == 'shoot-lead'){
             bulletSpeed = 12
         }else if (this.attackType == 'asteroid'){
             bulletSpeed = 12
@@ -118,6 +118,7 @@ class Hitbox{
 }
 
 function startMenu(){
+    inLoggin = false
     canvas.style.zIndex = 0
     canvas.style.backgroundColor = 'lime'
     c.fillStyle = 'black'
@@ -146,6 +147,7 @@ function startMenu(){
         standbyUsername = usernameInput.value;
         createAccountButton.remove()
         loginButton.remove()
+        logOutButton.remove()
         gameStart(usernameInput.value)
         usernameInput.remove()
     }
@@ -174,6 +176,7 @@ function startMenu(){
         infoButton.remove()
         createAccountButton.remove()
         loginButton.remove()
+        logOutButton.remove()
         standbyUsername = usernameInput.value;
         editEquipment()
     }
@@ -215,9 +218,9 @@ function startMenu(){
         infoButton.remove()
         createAccountButton.remove()
         loginButton.remove()
+        logOutButton.remove()
         createAccount();
     }
-
 
     let loginButton = new Divobject({
         color: 'yellow',
@@ -241,9 +244,45 @@ function startMenu(){
         usernameInput.remove()
         infoButton.remove()
         loginButton.remove()
+        logOutButton.remove()
         createAccountButton.remove()
         login();
     }
+    let logOutButton = new Divobject({
+        color: 'red',
+        dimensions:{
+            width: 200,
+            height:100
+        },
+        position:{
+            x:1230,
+            y:300
+        },
+        id: 'logOutButton'
+    })
+    logOutButton = document.getElementById("logOutButton");
+    logOutButton.innerHTML = "Log out"
+    logOutButton.style.textAlign = 'center'
+    logOutButton.style.border = "5px Solid Black"
+    logOutButton.onclick = function(){
+        startButton.remove()
+        equipmentButton.remove()
+        usernameInput.remove()
+        infoButton.remove()
+        loginButton.remove()
+        logOutButton.remove()
+        createAccountButton.remove()
+        currentUsername = "guest"
+        playerClass = "shooter"
+        playerTriggers = ['shoot','scorpion','hound','sniper','jumper','shield','camo','radar']
+        localStorage.removeItem('username');
+        localStorage.removeItem('password');
+        c.fillStyle = 'lime'
+        c.fillRect(0,0,1440,900)
+        startMenu()
+    }
+
+
 
 
     let usernameInput = document.createElement("textarea");
@@ -256,12 +295,13 @@ function startMenu(){
     usernameInput.style.left = 0;
     usernameInput.style.top = 0;
     usernameInput.style.resize = 'none';
-    usernameInput.value = standbyUsername;
+    usernameInput.value = currentUsername;
     infoButton.onclick = function(){
         startButton.remove()
         equipmentButton.remove()
         infoButton.remove()
         loginButton.remove()
+        logOutButton.remove()
         usernameInput.remove()
         createAccountButton.remove()
         infoMenu()
@@ -417,6 +457,9 @@ function editEquipment(){
         xButton.remove()
         c.fillStyle = 'lime'
         c.fillRect(0,0,1440,900)
+        if (!(currentUsername == 'guest')){
+            socket.emit('updateEquipment',currentUsername,playerTriggers,playerClass)
+        }
         startMenu()
     }
 }
@@ -451,6 +494,8 @@ function createAccount(){
     c.fillText("Username:", 620, 250)
     usernameArea = document.createElement("textarea")
     usernameArea.style.width = 200
+    usernameArea.maxLength = 30;
+
     usernameArea.style.height = 40
     usernameArea.style.position = "absolute"
     usernameArea.style.left = 620
@@ -467,6 +512,7 @@ function createAccount(){
     passwordArea.style.position = "absolute"
     passwordArea.style.left = 620
     passwordArea.style.top = 450
+    passwordArea.maxLength = 30;
     passwordArea.style.border = "5px solid black"
     passwordArea.style.background = "cyan"
     passwordArea.style.resize = 'none';
@@ -494,6 +540,7 @@ function createAccount(){
 
 }
 function login(){
+    inLoggin = true
     c.fillStyle = "gray";
     c.fillRect(0,0,1440,900);
 
@@ -728,7 +775,7 @@ function attack(){
                 socket.emit('triggerUse',trig, lastKey,playerEnergy)
             }
         }else if (trig == 'teleport'){
-            if (playerEnergy > 20){
+            if ((playerEnergy > 20)&& (!(moveLock))){
                 attackCooldown(500);
                 playerEnergy -= 20
                 socket.emit('triggerUse',trig, lastKey,playerEnergy)
@@ -753,7 +800,7 @@ function subAttack(){
                 playerEnergy -= 30
                 socket.emit('triggerUse',trig, lastKey,playerEnergy)
             }
-        } else if (trig == 'teleport'){
+        } else if ((trig == 'teleport')&&(!(moveLock))){
             if (playerEnergy > 20){
                 attackCooldown(500);
                 playerEnergy -= 20
@@ -1077,12 +1124,18 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
         element.move()
         c.fillRect(-element.position.x + 742 + xOffset, -element.position.y + 442 + yOffset,element.dimensions.width, element.dimensions.height)
         } else if (element.attackType == 'snipe'){
-            projectileDamage = 50
+            projectileDamage = 75
 
             c.fillStyle = element.color
             c.fillRect(-element.position.x + 742 + xOffset, -element.position.y + 442 + yOffset,element.dimensions.width, element.dimensions.height)
             element.move()
-        } else if (element.attackType == 'shoot-lead'){
+        } else if (element.attackType == 'lightning'){
+            projectileDamage = 25
+
+            c.fillStyle = element.color
+            c.fillRect(-element.position.x + 742 + xOffset, -element.position.y + 442 + yOffset,element.dimensions.width, element.dimensions.height)
+            element.move()
+        }else if (element.attackType == 'shoot-lead'){
             projectileDamage = 0
         c.fillStyle = element.color
         element.move()
@@ -1284,6 +1337,19 @@ socket.on('updatePlayers',(backendPlayers,objectMap) => {
     }
     moveLock = false
     if ((playerTriggers[currentTriggerSlot] == 'sniper') || (playerTriggers[subTriggerSlot] == 'sniper')){
+        moveLock = true
+        c.fillStyle = 'green'
+        if (lastKey == 'a'){
+            c.fillRect(500,450 - 25,10,10)
+        } else  if (lastKey == 'd'){
+            c.fillRect(940,450 - 25,10,10)
+        } else if (lastKey == 'w'){
+            c.fillRect(720 + 8,230,10,10)
+        } else if (lastKey == 's'){
+            c.fillRect(720 + 8,620,10,10)
+        }
+    }
+    if ((playerTriggers[currentTriggerSlot] == 'lightning') || (playerTriggers[subTriggerSlot] == 'lightning')){
         moveLock = true
         c.fillStyle = 'green'
         if (lastKey == 'a'){
@@ -1537,7 +1603,30 @@ socket.on('createAttack',(player, trig, lastKey,id) =>{
             snipe.direction = lastKey
                   
         
-} else if (trig == 'shoot-lead'){
+} else if(trig == 'lightning'){
+    if (id == socket.id){
+    playerEnergy -= 25
+    }
+attackCooldown(1500/4)
+lightning = new Drawing({
+        position:{
+            x:player.x + 15,
+            y:player.y  + 15
+        },
+        color:'cyan',
+        dimensions:{
+            width:10,
+            height:10
+        },
+        id: id,
+        attackType: 'lightning'
+
+    })
+    projectiles.push(lightning)
+    lightning.direction = lastKey
+          
+
+}else if (trig == 'shoot-lead'){
         if (id == socket.id){
         playerEnergy -= 15
         }
@@ -1612,8 +1701,11 @@ socket.on('createAttack',(player, trig, lastKey,id) =>{
 socket.on("sendMessage",(message) =>{
     alert(message)
 })
-socket.on('loggedIn',() =>{
+socket.on('loggedIn',(dataEquipment,clas) =>{
+    if (inLoggin){
     currentUsername  = usernameArea.value
+    localStorage.setItem("username",usernameArea.value)
+    localStorage.setItem("password",passwordArea.value)
     xButtonAccount.remove()
     usernameArea.remove()
     passwordArea.remove()
@@ -1621,5 +1713,13 @@ socket.on('loggedIn',() =>{
     c.fillStyle = "lime"
     c.fillRect(0,0,1440,900);
     startMenu();
+    inLoggin = false
+    }
+    playerTriggers = dataEquipment
+    playerClass = clas
 })
+if ((!(localStorage.getItem("username") == null)) && (!(localStorage.getItem("password") == null))){
+    socket.emit('login',(localStorage.getItem("username")),(localStorage.getItem("password")))
+    currentUsername = localStorage.getItem("username")
+}
 startMenu()

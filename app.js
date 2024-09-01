@@ -281,6 +281,10 @@ io.on('connection',(socket) =>{
       if (players[socket.id].energy > 70){
       io.emit('createAttack',players[socket.id], trig, lastKey,socket.id)
       }
+    }else if (trig == 'lightning'){
+      if (players[socket.id].energy > 25){
+      io.emit('createAttack',players[socket.id], trig, lastKey,socket.id)
+      }
     }else if (trig == 'shoot-lead'){
       if (players[socket.id].energy > 15){
       io.emit('createAttack',players[socket.id], trig, lastKey,socket.id)
@@ -329,11 +333,51 @@ io.on('connection',(socket) =>{
       if (!((inputD.toString()).includes(username))){
         io.emit('sendMessage',("Username does not exist"))
       }else {
-        for (let i = 0; i < accountArray.length; i+=2){
+        for (let i = 0; i < accountArray.length; i+=4){
           if((accountArray[i] == ("Username: " + username))&&(accountArray[i+1] == "Password: " + password)){
-            io.emit('loggedIn')
+            io.emit('loggedIn',(accountArray[i+2].slice(11).split(" ")),accountArray[i+3].slice(7))
           }
         }
+      }
+      })
+  })
+  socket.on('updateEquipment',(username,equipment,clas) =>{
+    fs.readFile('userData.txt', (err, inputD) => {
+      if (err) throw err;
+      console.log(inputD.toString())
+      let accountArray = ((inputD.toString()).split("\n"))
+      if (!((inputD.toString()).includes(username))){
+        io.emit('sendMessage',(username))
+      }else {
+        for (let i = 0; i < accountArray.length; i+=3){
+          if(accountArray[i] == ("Username: " + username)){
+            let equipmentString = "Equipment: "
+            for (let j = 0; j < equipment.length; j++){
+              equipmentString = equipmentString + equipment[j] + " ";
+            }
+            if (accountArray[i+2].includes("Equipment: ")){
+              accountArray[i+2] = equipmentString;
+            }
+            accountArray[i+3] = "Class: " + clas
+          }
+        }
+        console.log(accountArray)
+
+        fs.truncate('userData.txt', 0, function() { 
+          function addToFile(number){
+            if (number < accountArray.length - 1){
+              fs.appendFile('userData.txt', accountArray[number] + "\n", (err) => {
+                addToFile(number + 1)
+              })
+            } else if (number == accountArray.length - 1){
+              fs.appendFile('userData.txt', accountArray[number], (err) => {
+                addToFile(number + 1)
+              })
+            }
+          }
+
+          addToFile(0)
+        });
       }
       })
   })
@@ -354,11 +398,15 @@ function newUser(username,password){
     if (err) throw err;
     if ((inputD.toString()).includes(username)){
       io.emit('sendMessage',("Username in use"))
+    }else if(username.includes("\n")) {
+      io.emit('sendMessage',("username invalid"))
+    }else if(password.includes("\n")) {
+      io.emit('sendMessage',("password invalid"))
     }else if ((inputD.toString()).includes(password)){
       io.emit('sendMessage',("Password in use"))
     } else {
-      let writtenStuff = "Username: " + username + "\nPassword: " + password + "\n";
-      io.emit('loggedIn')
+      let writtenStuff = "Username: " + username + "\nPassword: " + password + "\nEquipment: shoot scorpion hound sniper jumper shield camo radar\nClass: \n";
+      io.emit('loggedIn',['shoot','scorpion','hound','sniper','jumper','shield','camo','radar'],"shooter")
       fs.appendFile('userData.txt', writtenStuff, (err) => {
           if (err) throw err; 
       })
@@ -427,3 +475,5 @@ function isJumpColide(x,y){
 }
 
 console.log("server  is did loaded");
+
+

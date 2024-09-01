@@ -1,4 +1,8 @@
 Username: Leo
 Password: Rafacz
-Username: Zarc206
-Password: Zarc206$
+Equipment: sword asteroid lightning hound teleport shield camo radar        
+Class: magenta
+Username: The Pope
+Password: FrancisTheGoat
+Equipment: shoot scorpion hound sniper jumper shield camo radar      
+Class: shooter

@@ -1889,6 +1889,7 @@ lightning = new Drawing({
 
 })
 socket.on("sendMessage",(message,id) =>{
+    console.log(id)
     if (id == socket.id){
     alert(message)
     }

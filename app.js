@@ -344,7 +344,6 @@ io.on('connection',(socket) =>{
   socket.on('updateEquipment',(username,equipment,clas) =>{
     fs.readFile('userData.txt', (err, inputD) => {
       if (err) throw err;
-      console.log(inputD.toString())
       let accountArray = ((inputD.toString()).split("\n"))
       if (!((inputD.toString()).includes(username))){
         //io.emit('sendMessage',(username))
@@ -361,7 +360,6 @@ io.on('connection',(socket) =>{
             accountArray[i+3] = "Class: " + clas
           }
         }
-        console.log(accountArray)
 
         fs.truncate('userData.txt', 0, function() { 
           function addToFile(number){

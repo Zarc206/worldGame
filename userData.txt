@@ -1,8 +1,16 @@
 Username: Leo
 Password: Rafacz
-Equipment: sword asteroid lightning hound teleport shield camo radar           
+Equipment: sword asteroid lightning hound teleport shield camo radar            
 Class: magenta
 Username: The Pope
 Password: FrancisTheGoat
+Equipment: shoot scorpion hound sniper jumper shield camo radar      
+Class: shooter
+Username: barbie
+Password: barbie
+Equipment: shoot scorpion hound sniper jumper shield camo radar      
+Class: shooter
+Username: bazinga
+Password: bazinga
 Equipment: shoot scorpion hound sniper jumper shield camo radar      
 Class: shooter

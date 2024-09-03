@@ -735,14 +735,16 @@ function gameStart(startUsername){
                 if (i < 4){
                     for (let j = 0; j < 4; j ++){
                         document.getElementById('triggerSlot' + j).style.border = '5px solid blue'
+                        currentTriggerSlot = i
                     }
                 } else {
                     for (let j = 4; j < 8; j ++){
                         document.getElementById('triggerSlot' + j).style.border = '5px solid blue'
+                        subTriggerSlot = i
+
                     }   
                 }
                 document.getElementById('triggerSlot' + i).style.border = '5px solid red'
-                currentTriggerSlot = i
             }
         }
         document.getElementById('triggerSlot' + 0).style.border = '5px solid red'

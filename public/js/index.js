@@ -1886,8 +1886,10 @@ lightning = new Drawing({
 }
 
 })
-socket.on("sendMessage",(message) =>{
+socket.on("sendMessage",(message,id) =>{
+    if (id == socket.id){
     alert(message)
+    }
 })
 socket.on('loggedIn',(dataEquipment,clas) =>{
     if (inLoggin){

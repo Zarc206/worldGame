@@ -331,7 +331,7 @@ io.on('connection',(socket) =>{
       if (err) throw err;
       let accountArray = ((inputD.toString()).split("\n"))
       if (!((inputD.toString()).includes(username))){
-        io.emit('sendMessage',("Username does not exist"))
+        io.emit('sendMessage',("Username does not exist"),socket.id)
       }else {
         for (let i = 0; i < accountArray.length; i+=4){
           if((accountArray[i] == ("Username: " + username))&&(accountArray[i+1] == "Password: " + password)){
@@ -347,7 +347,7 @@ io.on('connection',(socket) =>{
       console.log(inputD.toString())
       let accountArray = ((inputD.toString()).split("\n"))
       if (!((inputD.toString()).includes(username))){
-        io.emit('sendMessage',(username))
+        //io.emit('sendMessage',(username))
       }else {
         for (let i = 0; i < accountArray.length; i+=3){
           if(accountArray[i] == ("Username: " + username)){
@@ -397,13 +397,13 @@ function newUser(username,password){
   fs.readFile('userData.txt', (err, inputD) => {
     if (err) throw err;
     if ((inputD.toString()).includes(username)){
-      io.emit('sendMessage',("Username in use"))
+      io.emit('sendMessage',("Username in use"),socket.id)
     }else if(username.includes("\n")) {
-      io.emit('sendMessage',("username invalid"))
+      io.emit('sendMessage',("username invalid"),socket.id)
     }else if(password.includes("\n")) {
-      io.emit('sendMessage',("password invalid"))
+      io.emit('sendMessage',("password invalid"),socket.id)
     }else if ((inputD.toString()).includes(password)){
-      io.emit('sendMessage',("Password in use"))
+      io.emit('sendMessage',("Password in use"),socket.id)
     } else {
       let writtenStuff = "Username: " + username + "\nPassword: " + password + "\nEquipment: shoot scorpion hound sniper jumper shield camo radar\nClass: \n";
       io.emit('loggedIn',['shoot','scorpion','hound','sniper','jumper','shield','camo','radar'],"shooter")

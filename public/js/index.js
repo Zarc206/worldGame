@@ -28,6 +28,7 @@ let standbyUsername = " "
 let playerClass = "shooter"
 let currentUsername = "guest"
 let inLoggin = false
+let inMobile = false;
 
 
 triggerList = ['shoot','sword','shield','sniper','jumper','wall','camo','shoot-lead','radar','scorpion','asteroid','hound','cloak','teleport','lightning']
@@ -147,6 +148,7 @@ function startMenu(){
         standbyUsername = usernameInput.value;
         createAccountButton.remove()
         loginButton.remove()
+        mobile.remove()
         logOutButton.remove()
         gameStart(usernameInput.value)
         usernameInput.remove()
@@ -176,6 +178,7 @@ function startMenu(){
         infoButton.remove()
         createAccountButton.remove()
         loginButton.remove()
+        mobile.remove()
         logOutButton.remove()
         standbyUsername = usernameInput.value;
         editEquipment()
@@ -218,6 +221,7 @@ function startMenu(){
         infoButton.remove()
         createAccountButton.remove()
         loginButton.remove()
+        mobile.remove()
         logOutButton.remove()
         createAccount();
     }
@@ -244,6 +248,7 @@ function startMenu(){
         usernameInput.remove()
         infoButton.remove()
         loginButton.remove()
+        mobile.remove()
         logOutButton.remove()
         createAccountButton.remove()
         login();
@@ -270,6 +275,7 @@ function startMenu(){
         usernameInput.remove()
         infoButton.remove()
         loginButton.remove()
+        mobile.remove()
         logOutButton.remove()
         createAccountButton.remove()
         currentUsername = "guest"
@@ -281,9 +287,6 @@ function startMenu(){
         c.fillRect(0,0,1440,900)
         startMenu()
     }
-
-
-
 
     let usernameInput = document.createElement("textarea");
     usernameInput.maxLength = 30;
@@ -301,13 +304,42 @@ function startMenu(){
         equipmentButton.remove()
         infoButton.remove()
         loginButton.remove()
+        mobile.remove()
         logOutButton.remove()
         usernameInput.remove()
         createAccountButton.remove()
         infoMenu()
     }
-
-
+    mobileColor = "lime"
+    if (inMobile == false){
+        mobileColor = "red"
+    } 
+    let mobile = new Divobject({
+        dimensions:{
+            width:50,
+            height:50
+        },
+        color:mobileColor,
+        position:{
+            x:150,
+            y:100
+        },
+        id: "mobile"
+    })
+    mobile = document.getElementById("mobile")
+    mobile.style.border = "5px solid black";
+    mobile.onclick = function(){
+        if (inMobile){
+            inMobile = false
+            mobile.style.background = "red"
+        } else {
+            inMobile = true
+            mobile.style.background = "lime"
+        }
+    }
+    c.fillStyle = "black"
+    c.font = "20px arial"
+    c.fillText("Mobile:",20,120)
 }
 function editEquipment(){
     c.fillStyle = 'orange'
@@ -698,6 +730,20 @@ function gameStart(startUsername){
             triggerSlot = document.getElementById('triggerSlot' + i)
             triggerSlot.style.border = '5px solid blue'
             triggerSlot.innerHTML = playerTriggers[i]
+            triggerSlot.onclick = function(){
+                socket.emit('updateTriggerKey',playerTriggers[i])
+                if (i < 4){
+                    for (let j = 0; j < 4; j ++){
+                        document.getElementById('triggerSlot' + j).style.border = '5px solid blue'
+                    }
+                } else {
+                    for (let j = 4; j < 8; j ++){
+                        document.getElementById('triggerSlot' + j).style.border = '5px solid blue'
+                    }   
+                }
+                document.getElementById('triggerSlot' + i).style.border = '5px solid red'
+                currentTriggerSlot = i
+            }
         }
         document.getElementById('triggerSlot' + 0).style.border = '5px solid red'
         document.getElementById('triggerSlot' + 4).style.border = '5px solid red'
@@ -718,11 +764,153 @@ function gameStart(startUsername){
         chat.style.resize = 'none';
         document.body.append(chat);
     }
+    function addMobileControls(){
+        let mobiles = []
+        let attackMobile = new Divobject({
+            dimensions:{
+                width:200,
+                height:200
+            },
+            color: "orange",
+            position: {
+                x: 900,
+                y:600
+            },
+            id:"attackMobile"
+        })
+        attackMobile = document.getElementById("attackMobile")
+        attackMobile.onclick = function(){attack()}
+        mobiles.push(attackMobile)
+        let subattackMobile = new Divobject({
+            dimensions:{
+                width:200,
+                height:200
+            },
+            color: "orange",
+            position: {
+                x: 1200,
+                y:600
+            },
+            id:"subattackMobile"
+        })
+        subattackMobile = document.getElementById("subattackMobile")
+        subattackMobile.onclick = function(){subAttack()}
+        mobiles.push(subattackMobile)
+
+        let aMobile = new Divobject({
+            dimensions:{
+                width:100,
+                height:100
+            },
+            color: "orange",
+            position: {
+                x: 300,
+                y:700
+            },
+            id:"aMobile"
+        })
+        aMobile = document.getElementById("aMobile")
+        aMobile.onclick = function(){
+            keys.a.pressed = true;
+            lastKey = "a"
+        }
+        
+        mobiles.push(aMobile)
+
+        let sMobile = new Divobject({
+            dimensions:{
+                width:100,
+                height:100
+            },
+            color: "orange",
+            position: {
+                x: 450,
+                y:700
+            },
+            id:"sMobile"
+        })
+        sMobile = document.getElementById("sMobile")
+        sMobile.onclick = function(){
+            keys.s.pressed = true;
+            lastKey = "s"
+        }
+        
+        mobiles.push(sMobile)
+
+        let dMobile = new Divobject({
+            dimensions:{
+                width:100,
+                height:100
+            },
+            color: "orange",
+            position: {
+                x: 600,
+                y:700
+            },
+            id:"dMobile"
+        })
+        dMobile = document.getElementById("dMobile")
+        dMobile.onclick = function(){
+            keys.d.pressed = true;
+            lastKey = "d"
+        }
+        
+        mobiles.push(dMobile)
+
+        let wMobile = new Divobject({
+            dimensions:{
+                width:100,
+                height:100
+            },
+            color: "orange",
+            position: {
+                x: 450,
+                y:550
+            },
+            id:"wMobile"
+        })
+        wMobile = document.getElementById("wMobile")
+        wMobile.onclick = function(){
+            keys.w.pressed = true;
+            lastKey = "w"
+        }
+       
+        mobiles.push(wMobile)
+        let stopMobile = new Divobject({
+            dimensions:{
+                width:100,
+                height:100
+            },
+            color: "red",
+            position: {
+                x: 300,
+                y:550
+            },
+            id:"stopMobile"
+        })
+        stopMobile = document.getElementById("stopMobile")
+        stopMobile.onclick = function(){
+            keys.a.pressed = false
+            keys.w.pressed = false
+            keys.s.pressed = false
+            keys.d.pressed = false
+        }
+        mobiles.push(stopMobile)
+
+        mobiles.forEach(element =>{
+            element.style.border = "10px solid black"
+            element.style.opacity = 0.5
+            element.style.textAlign = "center";
+        })
+    }
 
     gameSetup()
     editControls(true)
     addTriggerIndicators()
     addChat()
+    if (inMobile){
+        addMobileControls()
+    }
     socket.emit('updateClass',playerClass);
 
 }

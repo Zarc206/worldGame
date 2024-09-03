@@ -1,6 +1,6 @@
 Username: Leo
 Password: Rafacz
-Equipment: sword asteroid lightning hound teleport shield camo radar        
+Equipment: sword asteroid lightning hound teleport shield camo radar           
 Class: magenta
 Username: The Pope
 Password: FrancisTheGoat

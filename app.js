@@ -403,7 +403,7 @@ function newUser(username,password){
     }else if ((inputD.toString()).includes(password)){
       io.emit('sendMessage',("Password in use"),socket.id)
     } else {
-      let writtenStuff = "Username: " + username + "\nPassword: " + password + "\nEquipment: shoot scorpion hound sniper jumper shield camo radar\nClass: \n";
+      let writtenStuff = "Username: " + username + "\nPassword: " + password + "\nEquipment: shoot scorpion hound sniper jumper shield camo radar\nClass: shooter\n";
       io.emit('loggedIn',['shoot','scorpion','hound','sniper','jumper','shield','camo','radar'],"shooter")
       fs.appendFile('userData.txt', writtenStuff, (err) => {
           if (err) throw err; 
